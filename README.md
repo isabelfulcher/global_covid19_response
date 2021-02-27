@@ -213,7 +213,7 @@ below, and look at the results through the counts and proportion lenses.
 
     ## [1] "Overdispersion detected for Facility K. Negative binomial will be used."
 
-The dataframe *example\_1\_results* contains the following fields:
+The dataframe *single.facility.results* contains the following fields:
 observed counts, estimated counts, prediction intervals for counts,
 observed proportion, estimated proportion, and prediction intervals for
 proportions.
@@ -221,12 +221,12 @@ proportions.
     head(single.facility.results)
 
     ##         site       date observed est_count ci_count_low ci_count_up
-    ## 1 Facility K 2016-01-01      220  219.2009       126.95     346.050
-    ## 2 Facility K 2016-02-01      177  222.8679       125.00     345.525
-    ## 3 Facility K 2016-03-01      171  202.4128       115.00     307.000
-    ## 4 Facility K 2016-04-01      124  195.2028       117.95     305.525
-    ## 5 Facility K 2016-05-01      182  214.2785       125.95     329.525
-    ## 6 Facility K 2016-06-01      236  218.4203       134.00     330.575
+    ## 1 Facility K 2016-01-01      220  219.2009      123.475     346.525
+    ## 2 Facility K 2016-02-01      177  222.8679      142.475     333.050
+    ## 3 Facility K 2016-03-01      171  202.4128      116.000     319.525
+    ## 4 Facility K 2016-04-01      124  195.2028      115.950     289.000
+    ## 5 Facility K 2016-05-01      182  214.2785      130.425     333.000
+    ## 6 Facility K 2016-06-01      236  218.4203      125.950     331.050
     ##   observed_prop   est_prop ci_prop_low ci_prop_up
     ## 1    0.07006369 0.06863057  0.04089968 0.11273885
     ## 2    0.05035562 0.07083926  0.04237553 0.11749644
@@ -283,7 +283,8 @@ sites.
     ## [1] "Overdispersion detected for Facility K. Negative binomial will be used."
     ## [1] "Overdispersion detected for Facility Q. Negative binomial will be used."
 
-The dataframe *facility.list* combines the results for each facility.
+The dataframe *facility.results* combines the results for each facility
+with the *site* variable linking to the correct facility.
 
     head(facility.results)
 
@@ -347,7 +348,8 @@ result in an underestimated count during these months if ignored
                           site_var = "facility",
                           R=500) -> aggregate.results
 
-The fields in the output are the same as for a facility-level model.
+The results are given by the data frame *aggregate.results* with the
+same columns ast the facility-level model.
 
     head(aggregate.results)
 
@@ -377,11 +379,11 @@ now for the county of interest, using the same plotting function:
 
 We recommend reading
 (<a href="https://otexts.com/fpp2/residuals.html" class="uri">https://otexts.com/fpp2/residuals.html</a>)
-for an overview on evaluating time series models. We provide code to
-replicate these plots and tests using the output from our main
-functions. We show at the residual plots using the output from our main
-functions. We do this for the aggregate results and then for the
-facility-level results for County K.
+for a detailed overview on the evaluation of time series regression
+models. We provide code to replicate the plots and statistical tests
+from this resource using the output from our main functions. We first
+show the residual pltos for the aggregate results (Facility K and
+Facility Q) and then for the facility-level results for County K.
 
     plot_residuals(aggregate.results,
                    type="count",
@@ -393,25 +395,25 @@ facility-level results for County K.
     plot_residuals(single.facility.results,
                    type="count",
                    extrapolation_date="2020-01-01",
-                   title="Residuals from County K model")
+                   title="Residuals from Facility K model")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
 We then look at the Partial Autocorrelation Function and Autocorrelation
-Function plots for County K. The same code can be used for the
+Function plots for Facility K. The same code can be used for the
 aggregated results.
 
     plot_pacf(single.facility.results,
               type="count",
               extrapolation_date="2020-01-01",
-              title="PACF for County K")
+              title="PACF for Facility K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
     plot_acf(single.facility.results,
              type="count",
              extrapolation_date="2020-01-01",
-             title="ACF for County K")
+             title="ACF for Facility K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 

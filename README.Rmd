@@ -111,7 +111,7 @@ fit.site.specific.denom.pi(data=data,
                            R=500) -> single.facility.results
 ```
 
-The dataframe *example_1_results* contains the following fields: observed counts, estimated counts, prediction intervals for counts, observed proportion, estimated proportion, and prediction intervals for proportions.
+The dataframe *single.facility.results* contains the following fields: observed counts, estimated counts, prediction intervals for counts, observed proportion, estimated proportion, and prediction intervals for proportions.
 
 
 ```{r,warning=FALSE,message=FALSE}
@@ -161,7 +161,7 @@ do.call(rbind, lapply(all_sites,function(x){
 ) -> facility.results
 ```
 
-The dataframe *facility.list* combines the results for each facility. 
+The dataframe *facility.results* combines the results for each facility with the *site* variable linking to the correct facility.
 
 
 ```{r,cache=TRUE}
@@ -200,7 +200,7 @@ fit.aggregate.pi.boot(data,
                       R=500) -> aggregate.results
 ```
 
-The fields in the output are the same as for a facility-level model.
+The results are given by the data frame *aggregate.results* with the same columns ast the facility-level model.
 
 ```{r,cache=TRUE}
 head(aggregate.results)
@@ -214,7 +214,7 @@ plot_site(aggregate.results, "count", title="Facility K and Q Aggregated Results
 
 #### Example 4: Model diagnostics
 
-We recommend reading (https://otexts.com/fpp2/residuals.html) for an overview on evaluating time series models. We provide code to replicate these plots and tests using the output from our main functions. We show at the residual plots using the output from our main functions. We do this for the aggregate results and then for the facility-level results for County K. 
+We recommend reading (https://otexts.com/fpp2/residuals.html) for a detailed overview on the evaluation of time series regression models. We provide code to replicate the plots and statistical tests from this resource using the output from our main functions. We first show the residual pltos for the aggregate results (Facility K and Facility Q) and then for the facility-level results for County K. 
 
 ```{r}
 plot_residuals(aggregate.results,
@@ -227,23 +227,23 @@ plot_residuals(aggregate.results,
 plot_residuals(single.facility.results,
                type="count",
                extrapolation_date="2020-01-01",
-               title="Residuals from County K model")
+               title="Residuals from Facility K model")
 ```
 
-We then look at the Partial Autocorrelation Function and Autocorrelation Function plots for County K. The same code can be used for the aggregated results. 
+We then look at the Partial Autocorrelation Function and Autocorrelation Function plots for Facility K. The same code can be used for the aggregated results. 
 
 ```{r,warning=FALSE}
 plot_pacf(single.facility.results,
           type="count",
           extrapolation_date="2020-01-01",
-          title="PACF for County K")
+          title="PACF for Facility K")
 ```
 
 ```{r,warning=FALSE}
 plot_acf(single.facility.results,
          type="count",
          extrapolation_date="2020-01-01",
-         title="ACF for County K")
+         title="ACF for Facility K")
 ```
 
 Lastly, we can conduct the Bresuch-Godfrey Test for the facility-level models (order = 12 for monthly data). This code will apply over multiple site (or faiclity) results. This provides a way to rapidly identify problematic model fits for further investigation.
