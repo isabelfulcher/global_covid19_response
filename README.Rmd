@@ -18,6 +18,9 @@ library(MASS)
 library(tidyverse) 
 library(ggplot2)
 library(prettyGraphs)
+library(ggfortify)
+library(forecast)
+library(lmtest)
 ```
 
 
@@ -97,6 +100,7 @@ This folder contains figures that have been included in README.md.
 ```{r,warning=FALSE,message=FALSE}
 source("R/model_functions.R")
 source("R/model_figures.R")
+source("R/model_diagnostics.R")
 ```
 
 
@@ -127,14 +131,14 @@ fit.site.specific.denom.pi(data=data,
                            indicator_var="ari_cases",
                            denom_var="total_visits", 
                            date_var="date",
-                           R=500) -> example_1_results 
+                           R=500) -> single.facility.results
 ```
 
 The dataframe *example_1_results* contains the following fields: observed counts, estimated counts, prediction intervals for counts, observed proportion, estimated proportion, and prediction intervals for proportions.
 
 
 ```{r,warning=FALSE,message=FALSE}
-head(example_1_results)
+head(single.facility.results)
 ```
 
 We can view plots of the results for Facility K, for counts and for proportions, by running the following function and passing in the facility-specific model results dataframe as the first parameter and either "count" or "proportion" as the second parameter. 
@@ -143,7 +147,7 @@ We can view plots of the results for Facility K, for counts and for proportions,
 ##### Single Facility Counts Results
 
 ```{r}
-plot_site(example_1_results,type="count", title="Acute Respiratory Infections at Facility K")
+plot_site(single.facility.results,type="count", title="Acute Respiratory Infections at Facility K")
 ```
 
 
@@ -153,7 +157,7 @@ The observed count is given by the __black line__ (raw data from DHIS2). The exp
 ##### Single Facility Proportions Results
 
 ```{r}
-plot_site(example_1_results,type="proportion", title="Acute Respiratory Infections at Facility K")
+plot_site(single.facility.results,type="proportion", title="Acute Respiratory Infections at Facility K")
 ```
 
 
@@ -201,7 +205,7 @@ plot_heatmap(facility.results,type="count")
 
 __Note:__ the black border boxes indicate the count (or proportion) falls outside the prediction interval.
 
-#### Example 3: County-level
+#### Example 3: Aggregated results
 
 We now wish to calculate a total count for the both facilities. Note that we decide not to sum the ARI cases and total visit counts in the two facilities because there are several values missing, which would result in an underestimated count during these months if ignored (i.e. assumed to be zero). 
 
@@ -231,4 +235,38 @@ We can view similar plots as for the facility-specific plots above but now for t
 plot_site(aggregate.results, "count", title="Facility K and Q Aggregated Results")
 ```
 
+#### Example 4: Model diagnostics
 
+We recommend reading (https://otexts.com/fpp2/residuals.html) for an overview on evaluating time series models. We provide code to replicate these plots and tests using the output from our main functions. We first show at the residual plots using output from either function. First, we do this for the aggregate results and then for the facility-level results for County K. 
+
+```{r}
+plot_residuals(aggregate.results,type="count",extrapolation_date="2020-01-01",title="Residuals from Aggregated model")
+```
+
+```{r,warning=FALSE}
+plot_residuals(single.facility.results,type="count",extrapolation_date="2020-01-01",title="Residuals from County K model")
+```
+
+We can then look at the Partial Autocorrelation Function and Autocorrelation Function plots using output from either functions. 
+
+```{r,warning=FALSE}
+plot_pacf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="PACF for County K")
+```
+
+```{r,warning=FALSE}
+plot_acf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="ACF for County K")
+```
+
+Lastly, we can conduct the Bresuch-Godfrey Test for the facility-level models (order = 12 for monthly data). This code will apply over multiple site (or faiclity) results, providing a way to rapidly identify potentially problematic model fits.  
+
+```{r,warning=FALSE}
+bgtest_multiple_pval(data=data,
+                     indicator_var = "ari_cases",
+                     denom_var = "total_visits",
+                     date_var = "date",
+                     site_var = "facility",
+                     extrapolation_date = "2020-01-01",
+                     type = "count") 
+```
+
+A p-value less than 0.05 indicates evidence of residual correlation. As such, we should probably further investigate the model fit for County Q. There is no evidence of residual correlation in Facility K. 
