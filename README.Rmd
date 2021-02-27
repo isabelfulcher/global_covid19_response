@@ -24,20 +24,6 @@ library(lmtest)
 ```
 
 
-
-# Global COVID-19 Response
-_Last updated: 26 February 2021_
-
-## Table of Contents
-- [About](#About)
-- [Goals](#Goals)
-- [Modeling technique](#Modeling-technique)
-  - [Facility-level models](#Facility-level-models)
-  - [Aggregated models](#Aggregated-models)
-  - [Missing data considerations](#Missing-data-considerations)
-- [Overview of folders and files](#Overview-of-folders-and-files)
-- [Examples](#Examples)
-
 ## About:
 This repository contains code to follow the Data Processing Pipeline for the Global Covid-19 Syndromic Surveillance Team - a partnership between sites at Partners in Health, the Global Health Research Core at Harvard Medical School, and Brigham and Women's Hospital. The data has been modified to respect the privacy of our sites, in hopes that other groups can benefit from the functions we have written.
 
@@ -56,10 +42,7 @@ The functions included in this repository focus on the modeling and processing s
 
 ### Facility-level models:
 
-For facility-level assessments, we fit a generalized linear model with negative binomial distribution and log-link to estimate expected monthly counts. Only data from the baseline period will be used to estimate the expected counts:
-
-$$ \log(E[Y | year, t ]) = \beta_0 + \beta_1year + \sum_{k=1}^{3} \beta_{k1} cos(2 \pi kt/12) + \beta_{k2} sin(2 \pi kt/12) $$
-where Y indicates monthly indicator count, t indicates the cumulative month number. The year term captures trend, and the harmonic term captures seasonality. This model is an adaptation of that proposed by Dan Weinberger lab (https://weinbergerlab.github.io/ExcessILI/articles/PImortality.html). If data is available on a more granular level, then weekly or daily terms could be added to the equation to capture other types of trend. To calculate the prediction intervals, we used ciTools R package (https://cran.r-project.org/web/packages/ciTools/ciTools.pdf).
+For facility-level assessments, we fit a generalized linear model with negative binomial distribution and log-link to estimate expected monthly counts. This model is an adaptation of that proposed by Dan Weinberger lab (https://weinbergerlab.github.io/ExcessILI/articles/PImortality.html). If data is available on a more granular level, then weekly or daily terms could be added to the equation to capture other types of trend. To calculate the prediction intervals, we used ciTools R package (https://cran.r-project.org/web/packages/ciTools/ciTools.pdf).
  
 For proportions, in which the numerator is indicator counts and the denominator is outpatient visits, we produced similar prediction intervals using the following procedure: we performed a parametric bootstrap procedure that generates random monthly indicator counts from the prediction intervals described above and kept the total outpatient visits fixed. This gives empirical estimates and prediction intervals for proportions. If there were missing values for the monthly outpatient visit count, instead of deleting those months and doing a complete-case analysis which would waste existing indicator count data, we performed an imputation procedure as follows: first, we fit the aforementioned model for outpatient visits instead of indicator counts, and using that model’s estimates, imputed the missing denominator values. Then, we can do the parametric bootstrap procedure with the additional step of randomly imputing missing denominator values in order to account for variation and uncertainty in these imputed outpatient values. 
 
@@ -80,18 +63,12 @@ For the first reason, facilities with high levels of missing data (more than 20%
 For the second reason, facilities with ANY missing monthly data during the evaluation period (January 2020 onward) were removed. As the syndromic surveillance exercise hinges on comparing the observed counts to the expected and flagging for deviations, we require complete observed data during this period. In this context, it would be invalid to impute observed counts based on information from the baseline period. In theory, one could attempt to impute the observed count based on information during the evaluation period.
 
 ## Overview of folders and files:
+
 ### Data
-This folder contains example data used to demonstrate functions.
-#### data.example_singlecounty.rds
-The facility-level dataset used to demonstrate the functions throughout this repository. Note- specific names and numbers have been altered to respect the privacy of our sites.
+This folder contains an example dataset used to demonstrate functions.The facility-level dataset used to demonstrate the functions throughout this repository. Note: facility names and values have been altered to respect the privacy of our sites.
 
 ### R
-This folder contains the functions used to create the key data visualization figures and maps.
-
-
-### Figures
-This folder contains figures that have been included in README.md.
-
+This folder contains the functions used to fit the time series models, create the key data visualizations, and conduct model diagnostics.
 
 ## Examples
 
