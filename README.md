@@ -1,42 +1,21 @@
--   [Global COVID-19 Response](#global-covid-19-response)
-    -   [Table of Contents](#table-of-contents)
-    -   [About:](#about)
-    -   [Goals:](#goals)
-    -   [Modeling technique:](#modeling-technique)
-        -   [Facility-level models:](#facility-level-models)
-        -   [Aggregated models:](#aggregated-models)
-        -   [Deviations and data
-            visualizations:](#deviations-and-data-visualizations)
-        -   [Missing data considerations:](#missing-data-considerations)
-    -   [Overview of folders and files:](#overview-of-folders-and-files)
-        -   [Data](#data)
-        -   [R](#r)
-        -   [Figures](#figures)
-    -   [Examples](#examples)
-        -   [Loading Data and Functions](#loading-data-and-functions)
-        -   [Example 1: Single Facility](#example-1-single-facility)
-        -   [Example 2: Fit multiple facilities at
-            once](#example-2-fit-multiple-facilities-at-once)
-        -   [Example 3: Aggregated
-            results](#example-3-aggregated-results)
-        -   [Example 4: Model diagnostics](#example-4-model-diagnostics)
-
-Global COVID-19 Response
-========================
-
-*Last updated: 26 February 2021*
-
-Table of Contents
------------------
-
--   [About](#About)
--   [Goals](#Goals)
--   [Modeling technique](#Modeling-technique)
-    -   [Facility-level models](#Facility-level-models)
-    -   [Aggregated models](#Aggregated-models)
-    -   [Missing data considerations](#Missing-data-considerations)
--   [Overview of folders and files](#Overview-of-folders-and-files)
--   [Examples](#Examples)
+-   [About:](#about)
+-   [Goals:](#goals)
+-   [Modeling technique:](#modeling-technique)
+    -   [Facility-level models:](#facility-level-models)
+    -   [Aggregated models:](#aggregated-models)
+    -   [Deviations and data
+        visualizations:](#deviations-and-data-visualizations)
+    -   [Missing data considerations:](#missing-data-considerations)
+-   [Overview of folders and files:](#overview-of-folders-and-files)
+    -   [Data](#data)
+    -   [R](#r)
+-   [Examples](#examples)
+    -   [Loading Data and Functions](#loading-data-and-functions)
+    -   [Example 1: Single Facility](#example-1-single-facility)
+    -   [Example 2: Fit multiple facilities at
+        once](#example-2-fit-multiple-facilities-at-once)
+    -   [Example 3: Aggregated results](#example-3-aggregated-results)
+    -   [Example 4: Model diagnostics](#example-4-model-diagnostics)
 
 About:
 ------
@@ -86,14 +65,8 @@ processing stages.
 
 For facility-level assessments, we fit a generalized linear model with
 negative binomial distribution and log-link to estimate expected monthly
-counts. Only data from the baseline period will be used to estimate the
-expected counts:
-
-$$ \\log(E\[Y | year, t \]) = \\beta\_0 + \\beta\_1year + \\sum\_{k=1}^{3} \\beta\_{k1} cos(2 \\pi kt/12) + \\beta\_{k2} sin(2 \\pi kt/12) $$
- where Y indicates monthly indicator count, t indicates the cumulative
-month number. The year term captures trend, and the harmonic term
-captures seasonality. This model is an adaptation of that proposed by
-Dan Weinberger lab
+counts. This model is an adaptation of that proposed by Dan Weinberger
+lab
 (<a href="https://weinbergerlab.github.io/ExcessILI/articles/PImortality.html" class="uri">https://weinbergerlab.github.io/ExcessILI/articles/PImortality.html</a>).
 If data is available on a more granular level, then weekly or daily
 terms could be added to the equation to capture other types of trend. To
@@ -180,19 +153,15 @@ Overview of folders and files:
 
 ### Data
 
-This folder contains example data used to demonstrate functions.
-\#\#\#\# data.example\_singlecounty.rds The facility-level dataset used
-to demonstrate the functions throughout this repository. Note- specific
-names and numbers have been altered to respect the privacy of our sites.
+This folder contains an example dataset used to demonstrate
+functions.The facility-level dataset used to demonstrate the functions
+throughout this repository. Note: facility names and values have been
+altered to respect the privacy of our sites.
 
 ### R
 
-This folder contains the functions used to create the key data
-visualization figures and maps.
-
-### Figures
-
-This folder contains figures that have been included in README.md.
+This folder contains the functions used to fit the time series models,
+create the key data visualizations, and conduct model diagnostics.
 
 Examples
 --------
@@ -252,12 +221,12 @@ proportions.
     head(single.facility.results)
 
     ##         site       date observed est_count ci_count_low ci_count_up
-    ## 1 Facility K 2016-01-01      220  219.2009      130.425     330.575
-    ## 2 Facility K 2016-02-01      177  222.8679      128.475     343.525
-    ## 3 Facility K 2016-03-01      171  202.4128      124.475     301.050
-    ## 4 Facility K 2016-04-01      124  195.2028      115.475     320.050
-    ## 5 Facility K 2016-05-01      182  214.2785      127.900     315.775
-    ## 6 Facility K 2016-06-01      236  218.4203      128.950     344.100
+    ## 1 Facility K 2016-01-01      220  219.2009       126.95     346.050
+    ## 2 Facility K 2016-02-01      177  222.8679       125.00     345.525
+    ## 3 Facility K 2016-03-01      171  202.4128       115.00     307.000
+    ## 4 Facility K 2016-04-01      124  195.2028       117.95     305.525
+    ## 5 Facility K 2016-05-01      182  214.2785       125.95     329.525
+    ## 6 Facility K 2016-06-01      236  218.4203       134.00     330.575
     ##   observed_prop   est_prop ci_prop_low ci_prop_up
     ## 1    0.07006369 0.06863057  0.04089968 0.11273885
     ## 2    0.05035562 0.07083926  0.04237553 0.11749644
