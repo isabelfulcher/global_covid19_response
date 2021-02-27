@@ -252,12 +252,12 @@ proportions.
     head(single.facility.results)
 
     ##         site       date observed est_count ci_count_low ci_count_up
-    ## 1 Facility K 2016-01-01      220  219.2009      124.375     350.100
-    ## 2 Facility K 2016-02-01      177  222.8679      131.000     343.525
-    ## 3 Facility K 2016-03-01      171  202.4128      116.950     314.775
-    ## 4 Facility K 2016-04-01      124  195.2028      120.475     296.575
-    ## 5 Facility K 2016-05-01      182  214.2785      129.475     335.050
-    ## 6 Facility K 2016-06-01      236  218.4203      124.000     343.050
+    ## 1 Facility K 2016-01-01      220  219.2009      130.425     330.575
+    ## 2 Facility K 2016-02-01      177  222.8679      128.475     343.525
+    ## 3 Facility K 2016-03-01      171  202.4128      124.475     301.050
+    ## 4 Facility K 2016-04-01      124  195.2028      115.475     320.050
+    ## 5 Facility K 2016-05-01      182  214.2785      127.900     315.775
+    ## 6 Facility K 2016-06-01      236  218.4203      128.950     344.100
     ##   observed_prop   est_prop ci_prop_low ci_prop_up
     ## 1    0.07006369 0.06863057  0.04089968 0.11273885
     ## 2    0.05035562 0.07083926  0.04237553 0.11749644
@@ -410,33 +410,46 @@ We recommend reading
 (<a href="https://otexts.com/fpp2/residuals.html" class="uri">https://otexts.com/fpp2/residuals.html</a>)
 for an overview on evaluating time series models. We provide code to
 replicate these plots and tests using the output from our main
-functions. We first show at the residual plots using output from either
-function. First, we do this for the aggregate results and then for the
+functions. We show at the residual plots using the output from our main
+functions. We do this for the aggregate results and then for the
 facility-level results for County K.
 
-    plot_residuals(aggregate.results,type="count",extrapolation_date="2020-01-01",title="Residuals from Aggregated model")
+    plot_residuals(aggregate.results,
+                   type="count",
+                   extrapolation_date="2020-01-01",
+                   title="Residuals from Aggregated model")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-17-1.png)
 
-    plot_residuals(single.facility.results,type="count",extrapolation_date="2020-01-01",title="Residuals from County K model")
+    plot_residuals(single.facility.results,
+                   type="count",
+                   extrapolation_date="2020-01-01",
+                   title="Residuals from County K model")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-18-1.png)
 
-We can then look at the Partial Autocorrelation Function and
-Autocorrelation Function plots using output from either functions.
+We then look at the Partial Autocorrelation Function and Autocorrelation
+Function plots for County K. The same code can be used for the
+aggregated results.
 
-    plot_pacf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="PACF for County K")
+    plot_pacf(single.facility.results,
+              type="count",
+              extrapolation_date="2020-01-01",
+              title="PACF for County K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
-    plot_acf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="ACF for County K")
+    plot_acf(single.facility.results,
+             type="count",
+             extrapolation_date="2020-01-01",
+             title="ACF for County K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 
 Lastly, we can conduct the Bresuch-Godfrey Test for the facility-level
 models (order = 12 for monthly data). This code will apply over multiple
-site (or faiclity) results, providing a way to rapidly identify
-potentially problematic model fits.
+site (or faiclity) results. This provides a way to rapidly identify
+problematic model fits for further investigation.
 
     bgtest_multiple_pval(data=data,
                          indicator_var = "ari_cases",
@@ -451,5 +464,5 @@ potentially problematic model fits.
     ## Facility Q.p.value 0.04000929
 
 A p-value less than 0.05 indicates evidence of residual correlation. As
-such, we should probably further investigate the model fit for County Q.
-There is no evidence of residual correlation in Facility K.
+such, we should further investigate the model fit for County Q. There is
+no evidence of residual correlation in Facility K.

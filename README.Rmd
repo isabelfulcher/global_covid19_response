@@ -237,27 +237,39 @@ plot_site(aggregate.results, "count", title="Facility K and Q Aggregated Results
 
 #### Example 4: Model diagnostics
 
-We recommend reading (https://otexts.com/fpp2/residuals.html) for an overview on evaluating time series models. We provide code to replicate these plots and tests using the output from our main functions. We first show at the residual plots using output from either function. First, we do this for the aggregate results and then for the facility-level results for County K. 
+We recommend reading (https://otexts.com/fpp2/residuals.html) for an overview on evaluating time series models. We provide code to replicate these plots and tests using the output from our main functions. We show at the residual plots using the output from our main functions. We do this for the aggregate results and then for the facility-level results for County K. 
 
 ```{r}
-plot_residuals(aggregate.results,type="count",extrapolation_date="2020-01-01",title="Residuals from Aggregated model")
+plot_residuals(aggregate.results,
+               type="count",
+               extrapolation_date="2020-01-01",
+               title="Residuals from Aggregated model")
 ```
 
 ```{r,warning=FALSE}
-plot_residuals(single.facility.results,type="count",extrapolation_date="2020-01-01",title="Residuals from County K model")
+plot_residuals(single.facility.results,
+               type="count",
+               extrapolation_date="2020-01-01",
+               title="Residuals from County K model")
 ```
 
-We can then look at the Partial Autocorrelation Function and Autocorrelation Function plots using output from either functions. 
+We then look at the Partial Autocorrelation Function and Autocorrelation Function plots for County K. The same code can be used for the aggregated results. 
 
 ```{r,warning=FALSE}
-plot_pacf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="PACF for County K")
+plot_pacf(single.facility.results,
+          type="count",
+          extrapolation_date="2020-01-01",
+          title="PACF for County K")
 ```
 
 ```{r,warning=FALSE}
-plot_acf(single.facility.results,type="count",extrapolation_date="2020-01-01",title="ACF for County K")
+plot_acf(single.facility.results,
+         type="count",
+         extrapolation_date="2020-01-01",
+         title="ACF for County K")
 ```
 
-Lastly, we can conduct the Bresuch-Godfrey Test for the facility-level models (order = 12 for monthly data). This code will apply over multiple site (or faiclity) results, providing a way to rapidly identify potentially problematic model fits.  
+Lastly, we can conduct the Bresuch-Godfrey Test for the facility-level models (order = 12 for monthly data). This code will apply over multiple site (or faiclity) results. This provides a way to rapidly identify problematic model fits for further investigation.
 
 ```{r,warning=FALSE}
 bgtest_multiple_pval(data=data,
@@ -269,4 +281,4 @@ bgtest_multiple_pval(data=data,
                      type = "count") 
 ```
 
-A p-value less than 0.05 indicates evidence of residual correlation. As such, we should probably further investigate the model fit for County Q. There is no evidence of residual correlation in Facility K. 
+A p-value less than 0.05 indicates evidence of residual correlation. As such, we should further investigate the model fit for County Q. There is no evidence of residual correlation in Facility K. 
