@@ -1,7 +1,28 @@
+-   [Global COVID-19 Response](#global-covid-19-response)
+    -   [Table of Contents](#table-of-contents)
+    -   [About:](#about)
+    -   [Goals:](#goals)
+    -   [Modeling technique:](#modeling-technique)
+        -   [Facility-level models:](#facility-level-models)
+        -   [Aggregated models:](#aggregated-models)
+        -   [Deviations and data
+            visualizations:](#deviations-and-data-visualizations)
+        -   [Missing data considerations:](#missing-data-considerations)
+    -   [Overview of folders and files:](#overview-of-folders-and-files)
+        -   [Data](#data)
+        -   [R](#r)
+        -   [Figures](#figures)
+    -   [Examples](#examples)
+        -   [Loading Data and Functions](#loading-data-and-functions)
+        -   [Example 1: Single Facility](#example-1-single-facility)
+        -   [Example 2: Fit multiple facilities at
+            once](#example-2-fit-multiple-facilities-at-once)
+        -   [Example 3: County-level](#example-3-county-level)
+
 Global COVID-19 Response
 ========================
 
-*Last updated: 29 January 2021*
+*Last updated: 26 February 2021*
 
 Table of Contents
 -----------------
@@ -10,8 +31,7 @@ Table of Contents
 -   [Goals](#Goals)
 -   [Modeling technique](#Modeling-technique)
     -   [Facility-level models](#Facility-level-models)
-    -   [District and county-level
-        models](#District-and-county-level-models)
+    -   [Aggregated models](#Aggregated-models)
     -   [Missing data considerations](#Missing-data-considerations)
 -   [Overview of folders and files](#Overview-of-folders-and-files)
 -   [Examples](#Examples)
@@ -27,18 +47,17 @@ modified to respect the privacy of our sites, in hopes that other groups
 can benefit from the functions we have written.
 
 This repository contains data, code, and other items needed to reproduce
-this work. Outputs include figures, tables, and Leaflet maps. Further
-explanation of outputs and their construction is given in the “Overview
-of folders and files” section, which includes detailed explanations of
-the functions we have written.
+this work. Further explanation of outputs and their construction is
+given in the “Overview of folders and files” section, which includes
+detailed explanations of the functions we have written.
 
 Goals:
 ------
 
 The main goal of the Global COVID-19 Syndromic Survillance Team is to
 monitor changes in indicators that may signal changes in COVID-19 case
-numbers in health systems from our eight partnering countries: Haiti,
-Lesotho, Liberia, Malawi, Mexico, Peru, and Rwanda. This is accomplished
+numbers in health systems from our seven partnering countries: Haiti,
+Lesotho, Liberia, Malawi, Mexico, and Rwanda. This is accomplished
 through establishing a baseline using prior data, and monitoring for
 deviations for relevant indicators. The data visualization tools created
 using our functions allow identification of local areas that are
@@ -50,16 +69,13 @@ Modeling technique:
 The process starting with the raw data and finishing with the various
 outputs is referred to as the Data Processing Pipeline (see Figure 1
 below):
-![](figures/pipeline.png)
-
 
 After data has been cleaned, it is processed according to the level it
 is available at (either on a facility of county/district basis) for each
 indicator. This is done by taking data from a historic baseline period,
 and then projecting it into the evaluation period. This then is compared
-to the observed counts/proportions. A 95% confidence interval has been
-chosen, and we have defined the baseline period to be data from January
-2016-December 2019.
+to the observed counts/proportions. For our purposes, we have defined
+the baseline period to be data from January 2016-December 2019.
 
 The functions included in this repository focus on the modeling and
 processing stages.
@@ -71,8 +87,8 @@ negative binomial distribution and log-link to estimate expected monthly
 counts. Only data from the baseline period will be used to estimate the
 expected counts:
 
-![](figures/modelling_equation_1.png)
-where Y indicates monthly indicator count, t indicates the cumulative
+$$ \\log(E\[Y | year, t \]) = \\beta\_0 + \\beta\_1year + \\sum\_{k=1}^{3} \\beta\_{k1} cos(2 \\pi kt/12) + \\beta\_{k2} sin(2 \\pi kt/12) $$
+ where Y indicates monthly indicator count, t indicates the cumulative
 month number. The year term captures trend, and the harmonic term
 captures seasonality. This model is an adaptation of that proposed by
 Dan Weinberger lab
@@ -98,33 +114,24 @@ do the parametric bootstrap procedure with the additional step of
 randomly imputing missing denominator values in order to account for
 variation and uncertainty in these imputed outpatient values.
 
-### District and county-level models:
+### Aggregated models:
 
-In Liberia, it was also of interest to perform syndromic surveillance at
-the district and county-level. If there was no missing data, one could
-simply sum the ARI counts across all facilities within a district (or
-county) and fit the above model. However, the Liberia data contains
-months with missing counts at the facility-level. We used a parametric
-bootstrap to impute the missing values from the facility-level models in
-the previous section. We drew realizations of the ARI counts for each
-month and each facility and then summed these values for a district (or
-county) level estimate. We repeated this procedure 500 times and took
-the 2.5th and 97.5th percentiles to create 95% prediction intervals. For
-region-level proportions, the number of outpatient visits can be summed
-across facilities and a proportion can be computed. If there are missing
-values in the outpatient visits, another step can be included in the
-above parametric bootstrap procedure where missing outpatient visits are
-generated from fitting the above model and where Y indicates monthly
-outpatient visit count.
-
-Alternatively, one could fit a generalized linear mixed model using the
-above equation with a random effect terms for each facility within the
-region. The region-level count estimates can then be obtained by
-integrating over the random effects distribution. Ultimately, we did not
-choose this model due to its lack of flexibility in dealing with missing
-data.
-![](figures/modelling_equation_2.png)
-
+It was also of interest to perform syndromic surveillance at aggregated
+levels (e.g. district or county). If there was no missing monthly data,
+one could simply sum the indicator counts across all facilities within a
+district (or county) and fit the above model. However, data often
+contains months with missing counts at the facility-level. We used a
+parametric bootstrap to impute the missing values from the
+facility-level models in the previous section. We drew realizations of
+the ARI counts for each month and each facility and then summed these
+values for an aggregated estimate. We repeated this procedure 500 times
+and took the 2.5th and 97.5th percentiles to create 95% prediction
+intervals. For region-level proportions, the number of outpatient visits
+can be summed across facilities and a proportion can be computed. If
+there are missing values in the outpatient visits, another step can be
+included in the above parametric bootstrap procedure where missing
+outpatient visits are generated from fitting the above model and where Y
+indicates monthly outpatient visit count.
 
 ### Deviations and data visualizations:
 
@@ -193,72 +200,68 @@ Examples
     source("R/model_functions.R")
     source("R/model_figures.R")
 
-    data <- readRDS("data/data_example_singlecounty.rds")
+    data <- readRDS("data/data_example.rds")
 
     head(data)
 
-    ## # A tibble: 6 x 10
-    ##   date       county district facility indicator_count… indicator_count…
-    ##   <date>     <chr>  <chr>    <chr>               <dbl>            <dbl>
-    ## 1 2016-01-01 Count… Distric… Facilit…               29               15
-    ## 2 2016-01-01 Count… Distric… Facilit…               40                7
-    ## 3 2016-01-01 Count… Distric… Facilit…               46               13
-    ## 4 2016-01-01 Count… Distric… Facilit…              114               32
-    ## 5 2016-01-01 Count… Distric… Facilit…               38               17
-    ## 6 2016-01-01 Count… Distric… Facilit…               43               17
-    ## # … with 4 more variables: indicator_count_ari_over5 <dbl>,
-    ## #   indicator_denom <dbl>, indicator_denom_under5 <dbl>,
-    ## #   indicator_denom_over5 <dbl>
+    ## # A tibble: 6 x 5
+    ##   date       facility   county       ari_cases total_visits
+    ##   <date>     <chr>      <chr>            <dbl>        <dbl>
+    ## 1 2016-01-01 Facility K County Alpha       220         3140
+    ## 2 2016-01-01 Facility Q County Alpha        22          182
+    ## 3 2016-02-01 Facility K County Alpha       177         3515
+    ## 4 2016-02-01 Facility Q County Alpha        21          247
+    ## 5 2016-03-01 Facility K County Alpha       171         3761
+    ## 6 2016-03-01 Facility Q County Alpha        20          282
 
-The data loaded here are taken from a county in Liberia and perturbed
-slightly. The indicator of interest is acute respiratory infections
-(first column: indicqtor\_count\_ari\_total), disaggregated by age
-(following 2 columns), and we also see total outpatient visits
-(indicator\_denom)–a measure of healthcare utilization–disaggregated by
-age.
+The example data contains two health facilities: “Facility K” and
+“Facility Q”. The indicator of interest is acute respiratory infections
+(first column: ari\_cases) with total outpatient visits
+(total\_visits)–a measure of healthcare utilization.
 
 #### Example 1: Single Facility
 
 We take an example facility–“Facility K”, run the facility-specific
-model for one specific indicator–“indicator\_count\_ari\_total”, with
-the associated denominator–“indicator\_denom” and other parameter
-specifications as seen below, and look at the results through the counts
-and proportion lenses.
+model for one specific indicator–“ari\_cases”, with the associated
+denominator–“total\_visits” and other parameter specifications as seen
+below, and look at the results through the counts and proportion lenses.
 
     # Declare this for all functions
     extrapolation_date <- "2020-01-01"
 
     # Run Facility-level Model
-    example_1_results <- fit.site.specific.denom.pi(data=data,
-                                  site_name="Facility K",
-                                  extrapolation_date=extrapolation_date,
-                                  indicator_var="indicator_count_ari_total",
-                                  denom_var="indicator_denom", 
-                                  site_var="facility",
-                                  date_var="date",
-                                  R=500)   # Number of Boostrap resamples
+    fit.site.specific.denom.pi(data=data,
+                               site_var="facility",
+                               site_name="Facility K",
+                               extrapolation_date=extrapolation_date,
+                               indicator_var="ari_cases",
+                               denom_var="total_visits", 
+                               date_var="date",
+                               R=500) -> example_1_results 
+
+    ## [1] "Overdispersion detected for Facility K. Negative binomial will be used."
 
 The dataframe *example\_1\_results* contains the following fields:
-estimated counts, confidence intervals for counts, observed counts,
-estimated proportions, confidence intervals for proportions, and
-observed proportions.
+observed counts, estimated counts, prediction intervals for counts,
+observed proportion, estimated proportion, and prediction intervals for
+proportions.
 
     head(example_1_results)
 
-    ##         site       date est_raw_counts ci_raw_counts_low ci_raw_counts_up
-    ## 1 Facility K 2016-01-01       278.9518               163              436
-    ## 2 Facility K 2016-02-01       291.6721               167              455
-    ## 3 Facility K 2016-03-01       292.0675               167              435
-    ## 4 Facility K 2016-04-01       277.7879               155              428
-    ## 5 Facility K 2016-05-01       292.9597               167              453
-    ## 6 Facility K 2016-06-01       319.0795               190              491
-    ##   observed   est_prop ci_low_prop ci_up_prop observed_prop
-    ## 1      275 0.06064100  0.03412497 0.09617247    0.06340789
-    ## 2      258 0.06381119  0.03562063 0.10173186    0.05638112
-    ## 3      249 0.06667982  0.03993391 0.09738114    0.04912211
-    ## 4      172 0.06280992  0.03583161 0.09548554    0.03553719
-    ## 5      230 0.06238977  0.03526235 0.09986772    0.05070547
-    ## 6      342 0.06835973  0.04149827 0.10285818    0.06226106
+    ##         site       date observed est_count ci_count_low ci_count_up
+    ## 1 Facility K 2016-01-01      220  219.2009      132.000     347.000
+    ## 2 Facility K 2016-02-01      177  222.8679      130.475     335.525
+    ## 3 Facility K 2016-03-01      171  202.4128      121.000     312.050
+    ## 4 Facility K 2016-04-01      124  195.2028      122.950     298.050
+    ## 5 Facility K 2016-05-01      182  214.2785      121.950     315.150
+    ## 6 Facility K 2016-06-01      236  218.4203      134.000     331.525
+    ##   observed_prop   est_prop ci_prop_low ci_prop_up
+    ## 1    0.07006369 0.06863057  0.04089968 0.11273885
+    ## 2    0.05035562 0.07083926  0.04237553 0.11749644
+    ## 3    0.04546663 0.06740229  0.03894576 0.10330364
+    ## 4    0.03607797 0.06400931  0.03520512 0.09965813
+    ## 5    0.05824000 0.06752000  0.03934400 0.10337600
+    ## 6    0.06608793 0.07084850  0.04115094 0.10823999
 
 We can view plots of the results for Facility K, for counts and for
 proportions, by running the following function and passing in the
@@ -267,7 +270,7 @@ either “count” or “proportion” as the second parameter.
 
 ##### Single Facility Counts Results
 
-    plot_site(example_1_results,"count")
+    plot_site(example_1_results,type="count", title="Acute Respiratory Infections at Facility K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-7-1.png)
 
@@ -278,204 +281,122 @@ model described above).
 
 ##### Single Facility Proportions Results
 
-    plot_site(example_1_results, "proportion")
+    plot_site(example_1_results,type="proportion", title="Acute Respiratory Infections at Facility K")
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-8-1.png)
 
-#### Example 2: All Facilities
+#### Example 2: Fit multiple facilities at once
 
-We repeat the process above for all indicators and all facilities. In
-this example dataset, there are 25 facilities, 1 syndromic surveillance
-indicator (ARI) and 1 denominator indicator (total denominator or
-outpatient visits–a measure of healthcare utilization). We provide code
-below that can be adapted for more than 1 indicator.
+If there are multiple facilities, we may wish to fit multiple models at
+one time. Here, we provide code to apply over the function. Note that
+the same logic can be applied for multiple indicators across multiple
+sites.
 
-    # get all sites
-
+    # get all facilities
     all_sites <- data %>% distinct(facility) %>% pull()
 
-    # loop over all syndromic surveillance indicators and facilities
-
-    lapply(c("indicator_count_ari_total"), function(y){    # can have a list of more indicators than just ARI
-      
-      do.call(rbind, lapply(all_sites,function(x)
+    # loop over all  facilities
+    do.call(rbind, lapply(all_sites,function(x){
           fit.site.specific.denom.pi(data=data,
                                   site_name=x,
                                   extrapolation_date=extrapolation_date,
-                                  indicator_var=y,
-                                  denom_var="indicator_denom",   # corresponding denominator indicator needed for proportions
+                                  indicator_var="ari_cases",
+                                  denom_var="total_visits",   # corresponding denominator indicator needed for proportions
                                   site_var="facility",
                                   date_var="date",
-                                  R=500)))
-      }
-    ) -> facility.list
+                                  R=500)
+      })
+    ) -> facility.results
 
-    # label each dataframe in the output with the respective indicator names; note this example has only 1
+    ## [1] "Overdispersion detected for Facility K. Negative binomial will be used."
+    ## [1] "Overdispersion detected for Facility Q. Negative binomial will be used."
 
-    names(facility.list) <- c("indicator_count_ari_total")  
+The dataframe *facility.list* combines the results for each facility.
 
-The dataframe *facility.list\[\[“indicator\_count\_ari\_total”\]\]*
-contains, for each facility, the same fields as for a single facility:
-estimated counts, confidence intervals for counts, observed counts,
-estimated proportions, confidence intervals for proportions, and
-observed proportions.
+    head(facility.results)
 
-    head(facility.list[["indicator_count_ari_total"]])
+    ##         site       date observed est_count ci_count_low ci_count_up
+    ## 1 Facility K 2016-01-01      220  219.2009      128.475     352.050
+    ## 2 Facility K 2016-02-01      177  222.8679      134.950     328.525
+    ## 3 Facility K 2016-03-01      171  202.4128      125.475     320.625
+    ## 4 Facility K 2016-04-01      124  195.2028      119.000     296.525
+    ## 5 Facility K 2016-05-01      182  214.2785      128.475     340.000
+    ## 6 Facility K 2016-06-01      236  218.4203      132.950     336.625
+    ##   observed_prop   est_prop ci_prop_low ci_prop_up
+    ## 1    0.07006369 0.06863057  0.04089968 0.11273885
+    ## 2    0.05035562 0.07083926  0.04237553 0.11749644
+    ## 3    0.04546663 0.06740229  0.03894576 0.10330364
+    ## 4    0.03607797 0.06400931  0.03520512 0.09965813
+    ## 5    0.05824000 0.06752000  0.03934400 0.10337600
+    ## 6    0.06608793 0.07084850  0.04115094 0.10823999
 
-    ##         site       date est_raw_counts ci_raw_counts_low ci_raw_counts_up
-    ## 1 Facility F 2016-01-01       35.08931                13               70
-    ## 2 Facility F 2016-02-01       33.22316                10               68
-    ## 3 Facility F 2016-03-01       28.33952                 8               59
-    ## 4 Facility F 2016-04-01       26.92792                 7               59
-    ## 5 Facility F 2016-05-01       28.73480                 9               59
-    ## 6 Facility F 2016-06-01       29.71428                 9               61
-    ##   observed   est_prop ci_low_prop ci_up_prop observed_prop
-    ## 1       29 0.13659794  0.04639175  0.2783505    0.14948454
-    ## 2       17 0.13661202  0.04918033  0.2924863    0.09289617
-    ## 3       16 0.10386473  0.03381643  0.2318841    0.07729469
-    ## 4       29 0.09722222  0.02997685  0.2292824    0.13425926
-    ## 5       17 0.09963100  0.03690037  0.2085793    0.06273063
-    ## 6       44 0.09157509  0.02564103  0.2126374    0.16117216
+We can view plots of the results for both facilities together by running
+the following function and passing in the *facility.results* dataframe
+as the first parameter and either “count” or “proportion” as the second
+parameter.
 
-We repeat the same process above but for the denominator indicator
-variables. This is needed for the subsequent district-level and
-county-level analyses, and it is implemented within those corresponding
-functions, but we show this explicitly for demonstration’s sake (output
-not directly used in subsequent examples). We need the following
-facility-level estimates for denominator to randomly impute, just as we
-randomly impute missing syndromic surveillance indicator values using
-the facility-level model output from the code chunk above.
+    plot_facet(facility.results,type="count")
 
-    # loop over all denominator(outpatient) indicators and facilities
-
-    lapply(c("indicator_denom"), function(y){    # can have a list of more utilization indicators 
-
-        do.call(rbind, lapply(all_sites,function(x)
-          fit.site.specific.denom.pi(data=data,
-                                     site_name=x,
-                                     extrapolation_date=extrapolation_date,
-                                     indicator_var=y,
-                                     site_var="facility",
-                                     date_var="date",
-                                     counts_only=TRUE)))
-
-    }) -> facility.list.denom
-
-
-    names(facility.list.denom) <- c("indicator_denom")
-
-    head(facility.list.denom[["indicator_denom"]])
-
-    ##         site       date est_raw_counts ci_raw_counts_low ci_raw_counts_up
-    ## 1 Facility F 2016-01-01       230.8190                57              534
-    ## 2 Facility F 2016-02-01       232.6480                62              520
-    ## 3 Facility F 2016-03-01       257.9420                68              578
-    ## 4 Facility F 2016-04-01       270.6128                83              590
-    ## 5 Facility F 2016-05-01       278.6836                86              580
-    ## 6 Facility F 2016-06-01       321.8699               105              653
-    ##   observed est_prop ci_low_prop ci_up_prop observed_prop
-    ## 1      194       NA          NA         NA            NA
-    ## 2      183       NA          NA         NA            NA
-    ## 3      207       NA          NA         NA            NA
-    ## 4      216       NA          NA         NA            NA
-    ## 5      271       NA          NA         NA            NA
-    ## 6      273       NA          NA         NA            NA
-
-Below, we see results for ARI counts and proportions for all facilities:
-
-    plot_facet(facility.list[["indicator_count_ari_total"]], "count")
-
-![](README_files/figure-markdown_strict/unnamed-chunk-13-1.png)
-
-The observed count is given by the **black line** (raw data from DHIS2).
-The expected (predicted) count is given by the <font color='red'>**red
-line**</font> with 95% prediction intervals in light red (using the
-model described above).
-
-    plot_facet(facility.list[["indicator_count_ari_total"]], "proportion")
-
-![](README_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-11-1.png)
 
 Also useful are heatmaps, especially for comparison between the
 different facilities using the deviation metric as described above.
 Again, the first parameter in the function below is the model output,
 and the second parameter is either “count” or “proportion”:
 
-    plot_heatmap(facility.list[["indicator_count_ari_total"]],"count")
+    plot_heatmap(facility.results,type="count")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-12-1.png)
 
-**Note:** the black border boxes indicate statistical significance
-(e.g. significantly higher than expected or significantly lower than
-expected depending on the color)
-
-    plot_heatmap(facility.list[["indicator_count_ari_total"]],"proportion")
-
-![](README_files/figure-markdown_strict/unnamed-chunk-16-1.png)
+**Note:** the black border boxes indicate the count (or proportion)
+falls outside the prediction interval.
 
 #### Example 3: County-level
 
-Now we run the county-level model for the ARI indicator. The same can of
-course be done for the other indicators of interest. Note that the
-parameters we supply are mostly the same as for the facility-level
-model, except now we have a few additional parameter
-specifications:“n\_count\_base = 0”, which means we want to filter for
-facilities whose median indicator counts is greater than 0,
-“p\_miss\_baseline”, which means we accept facilities with 20% of months
-missing or fewer from the baseline period, and “p\_miss\_eval = 0.5”,
-which means we accept facilities with 50% of months missing or fewer
-from the evaluation period.
+We now wish to calculate a total count for the both facilities. Note
+that we decide not to sum the ARI cases and total visit counts in the
+two facilities because there are several values missing, which would
+result in an underestimated count during these months if ignored
+(i.e. assumed to be zero).
 
-    county_results <- fit.cluster.pi(data = data,
-                               indicator_var = "indicator_count_ari_total",
-                               denom_var = "indicator_denom",
-                               site_var = "facility",
-                               date_var = "date",
-                               counts_only=FALSE,
-                               n_count_base = 0,
-                               p_miss_base = 0.2,
-                               p_miss_eval = 0.5,
-                               R=250)   # Number of Bootstrap resamples)
+    data %>% filter(is.na(ari_cases) | is.na(total_visits))
 
-    ## Note: Using an external vector in selections is ambiguous.
-    ## ℹ Use `all_of(indicator)` instead of `indicator` to silence this message.
-    ## ℹ See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
-    ## This message is displayed once per session.
+    ## # A tibble: 3 x 5
+    ##   date       facility   county       ari_cases total_visits
+    ##   <date>     <chr>      <chr>            <dbl>        <dbl>
+    ## 1 2018-08-01 Facility K County Alpha       106           NA
+    ## 2 2019-07-01 Facility Q County Alpha        NA           NA
+    ## 3 2019-10-01 Facility K County Alpha       125           NA
 
-The fields in the output are the same as for a facility-level model:
-estimated counts, confidence intervals for counts, observed counts,
-estimated proportions, confidence intervals for proportions, and
-observed proportions.
+    fit.aggregate.pi.boot(data,
+                          indicator_var = "ari_cases",
+                          denom_var = "total_visits",
+                          date_var = "date",
+                          site_var = "facility",
+                          R=500) -> aggregate.results
 
-    head(county_results)
+The fields in the output are the same as for a facility-level model.
 
-    ##         date est_raw_counts ci_raw_counts_low ci_raw_counts_up   est_prop
-    ## 1 2016-01-01         1348.5          1116.225         1589.550 0.07928928
-    ## 2 2016-02-01         1404.0          1143.000         1669.775 0.07127907
-    ## 3 2016-03-01         1383.5          1173.800         1662.550 0.07536515
-    ## 4 2016-04-01         1268.5          1048.800         1522.875 0.06721284
-    ## 5 2016-05-01         1293.5          1049.450         1554.275 0.06758392
-    ## 6 2016-06-01         1414.0          1166.450         1707.000 0.07811387
-    ##   ci_low_prop ci_up_prop observed observed_prop         site
-    ## 1  0.06649585 0.09619876     1231    0.08964236 County Alpha
-    ## 2  0.06057849 0.08503052     1124    0.06534884 County Alpha
-    ## 3  0.06151382 0.08951784     1304    0.07080415 County Alpha
-    ## 4  0.05379862 0.08189279     1042    0.05907699 County Alpha
-    ## 5  0.05534568 0.08093891     1071    0.05635063 County Alpha
-    ## 6  0.06631733 0.09336265     1491    0.08170311 County Alpha
+    head(aggregate.results)
+
+    ##         date observed est_count ci_count_low ci_count_up observed_prop
+    ## 1 2016-01-01      242     244.0      162.425     364.000    0.07284768
+    ## 2 2016-02-01      198     244.0      159.425     359.050    0.05263158
+    ## 3 2016-03-01      191     221.0      141.475     334.100    0.04724215
+    ## 4 2016-04-01      147     219.5      137.000     321.050    0.04003268
+    ## 5 2016-05-01      213     240.0      156.475     363.575    0.06235363
+    ## 6 2016-06-01      270     256.0      159.000     377.050    0.06894791
+    ##     est_prop ci_prop_low ci_prop_up
+    ## 1 0.07314871  0.04799067 0.10944461
+    ## 2 0.07123870  0.04545455 0.10863238
+    ## 3 0.06690576  0.04340218 0.10217660
+    ## 4 0.06467865  0.04097903 0.09806645
+    ## 5 0.07128220  0.04344994 0.10424473
+    ## 6 0.07533197  0.05017237 0.11174030
 
 We can view similar plots as for the facility-specific plots above but
 now for the county of interest, using the same plotting function:
 
-    plot_site(county_results, "count")
+    plot_site(aggregate.results, "count", title="Facility K and Q Aggregated Results")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-19-1.png)
-
-The observed count is given by the **black line** (raw data from DHIS2).
-The expected (predicted) count is given by the <font color='red'>**red
-line**</font> with 95% prediction intervals in light red (using the
-model described above).
-
-    plot_site(county_results,"proportion")
-
-![](README_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-16-1.png)
